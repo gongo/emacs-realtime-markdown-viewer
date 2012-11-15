@@ -57,7 +57,7 @@
                        (message "error connecting"))
            :on-close (lambda (websocket) (setq wstest-closed t))))))
 
-(defun rtmv:send-to-server ()
+(defun rtmv:send-to-server (beg end len)
   (when realtime-markdown-viewer-mode
     (let ((str (buffer-substring-no-properties (point-min) (point-max))))
       (websocket-send-text rtmv:websocket str))))
@@ -96,11 +96,11 @@
     (sleep-for 1)
     (rtmv:init-websocket port)
     (add-hook 'kill-buffer-hook 'rtmv:kill-process)
-    (add-hook 'post-command-hook 'rtmv:send-to-server nil t)))
+    (add-hook 'after-change-functions 'rtmv:send-to-server nil t)))
 
 (defun rtmv:finalize ()
   (websocket-close rtmv:websocket)
-  (remove-hook 'post-command-hook 'rtmv:send-to-server t)
+  (remove-hook 'after-change-functions 'rtmv:send-to-server t)
   (rtmv:kill-process))
 
 (define-minor-mode realtime-markdown-viewer-mode
