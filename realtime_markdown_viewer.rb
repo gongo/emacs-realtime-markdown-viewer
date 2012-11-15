@@ -3,13 +3,17 @@
 
 require 'sinatra'
 require 'sinatra-websocket'
+require 'sinatra/contrib'
+require "sinatra/reloader" if development?
 require 'redcarpet'
 
 set :server, 'thin'
 set :sockets, []
+set :public_folder, File.dirname(__FILE__) + '/static'
 
 get '/' do
-  erb :index
+  uri = request.host + ':' + request.port.to_s
+  erb :index, :locals => {:uri => uri}
 end
 
 get '/emacs' do
@@ -42,11 +46,6 @@ get '/markdown' do
   end
 end
 
-get '/static/:file.min.:ext' do |file, ext|
-  content_type ext
-  send_file "static/#{file}.min.#{ext}"
-end
-
 __END__
 @@ index
 <!doctype html>
@@ -55,8 +54,8 @@ __END__
     <meta charset="utf-8">
     <title>Realtime Markdown Viewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="text/javascript" src="/static/jquery.min.js"></script>
-    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <link rel="stylesheet" href="bootstrap.min.css">
 </head>
 <body>
     <div class="container">
@@ -65,7 +64,7 @@ __END__
     </div>
     <script type="text/javascript">
         $(function () {
-            var ws = new WebSocket('ws://localhost:5021/markdown');
+            var ws = new WebSocket('ws://<%= uri %>/markdown');
             ws.onopen = function () {
                 console.log('connected');
             };

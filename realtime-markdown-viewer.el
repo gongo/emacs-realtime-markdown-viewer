@@ -70,18 +70,15 @@
 (defvar rtmv:sinatra-file "realtime_markdown_viewer.rb"
   "File name of Realtime markdown viewer app")
 
-(defvar rtmv:webapp-path
+(defvar rtmv:webapp-root
   (when load-file-name
-    (let ((installed-dir (file-name-directory load-file-name)))
-      (case rtmv:lang
-        (perl (concat installed-dir rtmv:psgi-file))
-        (ruby (concat installed-dir rtmv:sinatra-file)))))
+    (file-name-directory load-file-name))
   "WebApp full path")
 
 (defun rtmv:webapp-launch-command (port)
   (case rtmv:lang
-    (perl (format "plackup --port %d %s" port rtmv:webapp-path))
-    (ruby (format "bundle exec ruby %s -p %d" rtmv:webapp-path port))))
+    (perl (format "plackup --port %d %s" port (concat rtmv:webapp-root rtmv:psgi-file)))
+    (ruby (format "cd %s && bundle exec ruby %s -p %d" rtmv:webapp-root rtmv:sinatra-file port))))
 
 (defun rtmv:webapp-launch (port)
   (let ((cmd (rtmv:webapp-launch-command port)))
