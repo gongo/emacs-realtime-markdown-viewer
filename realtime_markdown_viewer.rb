@@ -1,37 +1,34 @@
 #!/usr/bin/env ruby
 # -*- coding:utf-8 -*-
 
+require 'rubygems'
 require 'sinatra'
 require 'sinatra-websocket'
 require 'sinatra/contrib'
 require "sinatra/reloader" if development?
-require 'redcarpet'
+require 'github/markdown'
 
 set :server, 'thin'
 set :sockets, []
-set :public_folder, File.dirname(__FILE__) + '/static'
 
 get '/' do
   uri = request.host + ':' + request.port.to_s
-  erb :index, :locals => {:uri => uri}
+  erb :index, :locals => { :uri => uri }
 end
 
 get '/emacs' do
-
   request.websocket do |ws|
     ws.onopen { puts "@@ connect from emacs" }
     ws.onmessage do |msg|
-      markdown = RedcarpetCompat.new(msg)
-      html = markdown.to_html
+      html = GitHub::Markdown.render_gfm(msg)
       EM.next_tick do
-        settings.sockets.each{|s| s.send(html) }
+        settings.sockets.each{ |s| s.send(html) }
       end
     end
     ws.onclose do
       settings.sockets.delete(ws)
     end
   end
-
 end
 
 get '/markdown' do
@@ -55,11 +52,10 @@ __END__
     <title>Realtime Markdown Viewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="jquery.min.js"></script>
-    <link rel="stylesheet" href="bootstrap.min.css">
+    <link rel="stylesheet" href="gfm.css">
 </head>
 <body>
     <div class="container">
-        <header><h1>Demo</h1></header>
         <div id="preview"></div>
     </div>
     <script type="text/javascript">
