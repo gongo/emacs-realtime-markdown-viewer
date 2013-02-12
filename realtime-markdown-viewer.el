@@ -39,12 +39,6 @@
   :type 'integer
   :group 'realtime-markdown-viewer)
 
-(defcustom rtmv:lang 'perl
-  "Language WebApp program"
-  :type '(choice (const :tag "Amon2 Web Application" perl)
-                 (const :tag "Sinatra Web Application") ruby)
-  :group 'realtime-markdown-viewer)
-
 (defvar rtmv:websocket nil)
 
 (defun rtmv:init-websocket (port)
@@ -78,10 +72,7 @@ websocket 通信を開始する。
 
 (defvar rtmv:webapp-process nil)
 
-(defvar rtmv:psgi-file "realtime-md-server.psgi"
-  "File name of Realtime markdown viewer app")
-
-(defvar rtmv:sinatra-file "realtime_markdown_viewer.rb"
+(defvar rtmv:server-file "realtime_markdown_viewer.rb"
   "File name of Realtime markdown viewer app")
 
 (defvar rtmv:webapp-root
@@ -90,9 +81,7 @@ websocket 通信を開始する。
   "WebApp full path")
 
 (defun rtmv:webapp-launch-command (port)
-  (case rtmv:lang
-    (perl (format "plackup --port %d %s" port (concat rtmv:webapp-root rtmv:psgi-file)))
-    (ruby (format "cd %s && bundle exec ruby %s -p %d" rtmv:webapp-root rtmv:sinatra-file port))))
+  (format "cd %s && bundle exec ruby %s -p %d" rtmv:webapp-root rtmv:server-file port))
 
 (defun rtmv:webapp-launch (port)
   (setq rtmv:webapp-process (get-process rtmv:process-name))
