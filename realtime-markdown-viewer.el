@@ -103,7 +103,7 @@ webapp も stop する。"
   (let ((port rtmv:port))
     (make-local-variable 'rtmv:websocket)
     (rtmv:webapp-launch port)
-    (sleep-for 1)
+    (sleep-for 3)
     (rtmv:init-websocket port)
     (when (fboundp 'make-local-hook) ;; for Emacs 23.x or lower
       (make-local-hook 'kill-buffer-hook)
