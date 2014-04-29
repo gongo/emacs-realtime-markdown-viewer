@@ -7,20 +7,30 @@ require 'sinatra-websocket'
 require 'sinatra/contrib'
 require "sinatra/reloader" if development?
 require 'github/markdown'
+require 'html/pipeline'
+require 'pygments'
 
+set :bind, '0.0.0.0'
 set :server, 'thin'
 set :sockets, []
+set :pipeline, (
+  HTML::Pipeline.new [
+    HTML::Pipeline::MarkdownFilter,
+    HTML::Pipeline::EmojiFilter,
+    HTML::Pipeline::SyntaxHighlightFilter
+  ], { :asset_root => 'https://github.global.ssl.fastly.net/images/icons' }
+)
 
 get '/' do
   uri = request.host + ':' + request.port.to_s
-  erb :index, :locals => { :uri => uri }
+  erb :index, :locals => { :uri => uri, :style => Pygments.css }
 end
 
 get '/emacs' do
   request.websocket do |ws|
     ws.onopen { puts "@@ connect from emacs" }
     ws.onmessage do |msg|
-      html = GitHub::Markdown.render_gfm(msg)
+      html = settings.pipeline.call(msg)[:output].to_s
       EM.next_tick do
         settings.sockets.each{ |s| s.send(html) }
       end
@@ -52,6 +62,7 @@ __END__
     <title>Realtime Markdown Viewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="jquery.min.js"></script>
+    <style><%= style %></style>
     <link rel="stylesheet" href="gfm.css">
 </head>
 <body>
