@@ -1,5 +1,27 @@
 ;;; realtime-markdown-viewer.el ---
 
+;; Copyright (C) 2012 by Wataru MIYAGUNI
+
+;; Author: Wataru MIYAGUNI <gonngo@gmail.com>
+;; URL: https://github.com/gongo/emacs-realtime-markdown-viewer
+;; Keywords: websocket markdown
+;; Version: 0.0.1
+;; Package-Requires: ((websocket "1.2"))
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 ;; Copyright (C) 2012 by Syohei YOSHIDA
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
@@ -42,15 +64,6 @@
 (defvar rtmv:websocket nil)
 
 (defun rtmv:init-websocket (port)
-  "\
-websocket 通信を開始する。
-
-`websocket-open' は全てのプロセスを同じバッファ名で生成するため、
-`websocket-close' 内で `kill-buffer' された時に
-全ての websocket プロセスが削除されてしまう。
-そうなると、バッファ毎にもっている `rtmv:websocket' が
-意図せず close されて send されない不具合が出るため、
-ここでプロセス名を変更している。"
   (let ((url (format "ws://0.0.0.0:%d/emacs" port)))
     (message "Connect to %s" url)
     (setq rtmv:websocket
@@ -59,11 +72,7 @@ websocket 通信を開始する。
            :on-message (lambda (websocket frame)
                          (message "%s" (websocket-frame-payload frame)))
            :on-error (lambda (ws type err)
-                       (message "error connecting"))))
-    (let ((proc (websocket-conn rtmv:websocket)))
-      (set-process-buffer
-       proc
-       (generate-new-buffer (buffer-name (process-buffer proc)))))))
+                       (message "error connecting"))))))
 
 (defun rtmv:send-to-server (beg end len)
   (when realtime-markdown-viewer-mode
