@@ -7,3 +7,4 @@ gem "github-markdown"
 gem 'github-linguist'
 gem 'html-pipeline'
 gem 'gemoji'
+gem 'pygments.rb'
